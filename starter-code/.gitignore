@@ -1,7 +1,9 @@
 __pycache__/
 *.pyc
 .pytest_cache/
-bronze/
-output/logs/*.jsonl
-output/logs/*.log
 .venv/
+data/bronze/
+data/quarantine/
+logs/*.jsonl
+logs/*.log
+output/logs/
