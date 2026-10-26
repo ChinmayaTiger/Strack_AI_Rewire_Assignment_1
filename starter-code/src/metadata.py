@@ -16,7 +16,6 @@ def add_ingestion_metadata(
     """Attach batch_id, source_file and ingestion_timestamp to every row,
     preserving all original columns unchanged.
     """
-    # Defensive check against collision with source columns
     for col_name in METADATA_COLUMNS:
         if col_name in df.columns:
             df = df.withColumnRenamed(col_name, f"source_{col_name}")

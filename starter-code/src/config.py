@@ -25,25 +25,26 @@ BATCH_5_DIR = SAMPLE_BATCHES_DIR / "batch_5_data_quality"
 ENTITIES = {
     "customers": "customer_id",
     "orders": "order_id",
+    "sales_transactions": "order_id",
     "products": "product_id",
+    "stores": "store_id",
+    "returns": "return_id",
 }
 
-# Baseline batch 1 files mapping
+# Baseline batch 1 files mapping (all 5 entities)
 BATCH_1_FILES = {
     "customers": DATA_DIR / "customers.csv",
-    "orders": DATA_DIR / "sales_transactions.csv",
     "products": DATA_DIR / "products.csv",
+    "stores": DATA_DIR / "stores.csv",
+    "sales_transactions": DATA_DIR / "sales_transactions.csv",
+    "returns": DATA_DIR / "returns.csv",
 }
 
 # Complete batch configurations
 BATCHES = {
-    "batch_1": {
-        "customers": DATA_DIR / "customers.csv",
-        "orders": DATA_DIR / "sales_transactions.csv",
-        "products": DATA_DIR / "products.csv",
-    },
+    "batch_1": BATCH_1_FILES,
     "batch_2": {
-        "orders": BATCH_2_DIR / "sales_transactions_batch2_duplicate.csv",
+        "sales_transactions": BATCH_2_DIR / "sales_transactions_batch2_duplicate.csv",
     },
     "batch_3": {
         "customers": BATCH_3_DIR / "customers_batch3_loyalty_tier.csv",
