@@ -1,0 +1,4 @@
+order_id,order_date,store_id,product_id,customer_id,sales_channel,units_sold,unit_price,discount_pct,payment_status,delivery_status
+O-00001,2026-04-24,ST-005,P-009,C-0014,Online,3,208.95,0,Paid,Processing
+O-00002,2026-03-23,ST-010,P-005,C-0027,Mobile App,6,49.0,20,Pending,Processing
+O-00003,2026-02-12,ST-002,P-001,C-0055,In-store,5,359.1,0,Paid,Delivered

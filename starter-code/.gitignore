@@ -1,0 +1,7 @@
+__pycache__/
+*.pyc
+.pytest_cache/
+bronze/
+output/logs/*.jsonl
+output/logs/*.log
+.venv/
