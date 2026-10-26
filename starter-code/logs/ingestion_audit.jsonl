@@ -1,0 +1,3 @@
+{"batch_id": "batch_1", "entity": "customers", "source_file": "customers.csv", "rows_read": 80, "rows_written": 80, "duplicates_skipped": 0, "quarantined": 0, "drift_events": [], "logged_at": "2026-10-26T17:16:25Z"}
+{"batch_id": "batch_1", "entity": "orders", "source_file": "sales_transactions.csv", "rows_read": 360, "rows_written": 360, "duplicates_skipped": 0, "quarantined": 0, "drift_events": [], "logged_at": "2026-10-26T17:16:27Z"}
+{"batch_id": "batch_1", "entity": "products", "source_file": "products.csv", "rows_read": 10, "rows_written": 10, "duplicates_skipped": 0, "quarantined": 0, "drift_events": [], "logged_at": "2026-10-26T17:16:28Z"}

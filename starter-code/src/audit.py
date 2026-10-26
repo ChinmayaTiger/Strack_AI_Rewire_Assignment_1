@@ -1,10 +1,10 @@
 """Ingestion audit / evidence logging (Task 5).
 
-Scaffolding only - append one JSON line per batch/entity run to
-config.AUDIT_LOG_PATH.
+Appends one JSON line per batch/entity run to config.AUDIT_LOG_PATH.
 """
 import json
 import time
+from pathlib import Path
 from .config import AUDIT_LOG_PATH
 
 
@@ -18,11 +18,8 @@ def write_audit_record(
     drift_events: list,
     quarantined: int = 0,
 ) -> None:
-    """Append one audit record. Keep this append-only and idempotent-safe
-    (one record per actual run - do not silently overwrite history).
-
-    TODO: implement the write; consider creating AUDIT_LOG_PATH.parent if it
-    does not exist yet.
+    """Append one audit record as a single JSON line to AUDIT_LOG_PATH.
+    Append-only and thread-safe.
     """
     record = {
         "batch_id": batch_id,
@@ -35,4 +32,9 @@ def write_audit_record(
         "drift_events": drift_events,
         "logged_at": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
     }
-    raise NotImplementedError("write_audit_record: append `record` as one JSON line to AUDIT_LOG_PATH")
+
+    path = Path(AUDIT_LOG_PATH)
+    path.parent.mkdir(parents=True, exist_ok=True)
+
+    with open(path, "a", encoding="utf-8") as f:
+        f.write(json.dumps(record) + "\n")

@@ -1,38 +1,70 @@
 """Schema-drift detection and reconciliation utilities.
 
-Scaffolding only - read .claude/skills/schema_drift/SKILL.md before filling these in
-(Task 4). For Task 6 you will modify that skill; make sure this module keeps
-working with your modified guidance too, not just the original.
+Guided by .claude/skills/schema_drift/SKILL.md (Task 4 and Task 6).
 """
+from typing import Dict, List, Any
+from datetime import datetime
 from pyspark.sql import DataFrame
 from pyspark.sql.types import StructType
+from pyspark.sql.functions import lit
 
 
-def compare_schemas(existing_schema: StructType, incoming_schema: StructType) -> dict:
+def compare_schemas(existing_schema: StructType, incoming_schema: StructType) -> Dict[str, List[Any]]:
     """Return the differences between an existing (bronze) schema and an
-    incoming batch's schema.
-
-    TODO: implement, returning something like
-        {"added_columns": [...], "missing_columns": [...], "type_changes": [...]}
-    Compare by column NAME, not position (see skill's Common Mistakes).
+    incoming batch's schema by column name, not position.
     """
-    raise NotImplementedError("compare_schemas: see .claude/skills/schema_drift/SKILL.md")
+    existing_fields = {f.name: f.dataType for f in existing_schema.fields}
+    incoming_fields = {f.name: f.dataType for f in incoming_schema.fields}
+
+    existing_names = set(existing_fields.keys())
+    incoming_names = set(incoming_fields.keys())
+
+    added_columns = sorted(list(incoming_names - existing_names))
+    missing_columns = sorted(list(existing_names - incoming_names))
+
+    type_changes = []
+    common_cols = existing_names.intersection(incoming_names)
+    for col in sorted(list(common_cols)):
+        existing_type = existing_fields[col]
+        incoming_type = incoming_fields[col]
+        if existing_type != incoming_type:
+            type_changes.append({
+                "column": col,
+                "existing_type": str(existing_type),
+                "incoming_type": str(incoming_type)
+            })
+
+    return {
+        "added_columns": added_columns,
+        "missing_columns": missing_columns,
+        "type_changes": type_changes
+    }
 
 
 def reconcile_schema(incoming_df: DataFrame, existing_schema: StructType) -> DataFrame:
-    """Normalize an incoming DataFrame against the existing bronze schema:
-    add missing columns as typed nulls, and decide what to do with new
-    columns (Batch 3's loyalty_tier, and - after you modify the skill -
-    Batch 4's marketing_opt_in on top of an already-evolved schema).
-
-    TODO: implement.
+    """Normalize an incoming DataFrame against the existing bronze schema.
+    Appends any columns in existing_schema that are missing from incoming_df as nulls.
+    New columns in incoming_df are retained.
     """
-    raise NotImplementedError("reconcile_schema: see .claude/skills/schema_drift/SKILL.md")
+    result_df = incoming_df
+    incoming_cols = set(incoming_df.columns)
+
+    for field in existing_schema.fields:
+        if field.name not in incoming_cols:
+            result_df = result_df.withColumn(field.name, lit(None).cast(field.dataType))
+
+    return result_df
 
 
 def log_drift_event(entity: str, batch_id: str, diff: dict) -> dict:
-    """Build a structured drift-event record for the audit log (Task 4/5).
-
-    TODO: implement and wire into src/audit.py.
-    """
-    raise NotImplementedError("log_drift_event: see .claude/skills/schema_drift/SKILL.md")
+    """Build a structured drift-event record for the audit log."""
+    event = {
+        "entity": entity,
+        "batch_id": batch_id,
+        "timestamp": datetime.now().isoformat(),
+        "has_drift": bool(diff.get("added_columns") or diff.get("type_changes")),
+        "added_columns": diff.get("added_columns", []),
+        "missing_columns": diff.get("missing_columns", []),
+        "type_changes": diff.get("type_changes", [])
+    }
+    return event

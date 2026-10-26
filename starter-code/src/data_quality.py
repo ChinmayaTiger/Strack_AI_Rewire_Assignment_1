@@ -1,23 +1,40 @@
 """Data quality validation - Task 7 (Required AI-Native Activity).
 
-This module is intentionally just a placeholder. There is no
-.claude/skills/data_quality_validation/SKILL.md provided - you must design and
-create it yourself (see the Helper Guide, Section 5B) before filling in the
-functions below. Do not implement this module before you have written the
-skill; the skill's decision rules are what this module should implement.
+Guided by .claude/skills/data_quality_validation/SKILL.md.
 """
+from typing import Tuple
 from pyspark.sql import DataFrame
+from pyspark.sql.functions import col, trim, lit, when
 
 
-def validate_data_quality(df: DataFrame, business_key: str) -> tuple[DataFrame, DataFrame]:
+def validate_data_quality(df: DataFrame, business_key: str) -> Tuple[DataFrame, DataFrame]:
     """Split an incoming DataFrame into (valid_df, quarantined_df) according
-    to the rule(s) you define in your own .claude/skills/data_quality_validation/SKILL.md
-    (starting with: business_key must not be null/blank).
-
-    TODO: implement once your SKILL.md exists. Quarantined rows should still
-    carry a reason and full ingestion metadata (run this AFTER metadata.py,
-    per the Helper Guide's Section 5B ordering).
+    to the rule: business_key must not be null, empty, or whitespace-only.
+    
+    Quarantined rows retain all original columns, existing ingestion metadata,
+    and gain a descriptive `quarantine_reason` column.
     """
-    raise NotImplementedError(
-        "validate_data_quality: write .claude/skills/data_quality_validation/SKILL.md first"
+    if business_key not in df.columns:
+        # If business key is missing entirely, quarantine all rows
+        quarantined_df = df.withColumn(
+            "quarantine_reason", lit(f"Missing business key column: '{business_key}'")
+        )
+        empty_valid_df = df.filter(lit(False))
+        return empty_valid_df, quarantined_df
+
+    # Condition for null, empty string, or whitespace string
+    is_null_or_blank = (
+        col(business_key).isNull() | (trim(col(business_key).cast("string")) == "")
     )
+
+    valid_df = df.filter(~is_null_or_blank)
+
+    quarantined_df = (
+        df.filter(is_null_or_blank)
+        .withColumn(
+            "quarantine_reason",
+            lit(f"Null or blank business key: '{business_key}'")
+        )
+    )
+
+    return valid_df, quarantined_df

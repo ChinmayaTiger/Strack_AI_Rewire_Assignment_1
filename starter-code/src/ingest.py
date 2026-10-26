@@ -1,18 +1,18 @@
 """Batch ingestion entry point for a single entity/file (Task 1-2).
-
-Scaffolding only.
 """
+from pathlib import Path
 from pyspark.sql import DataFrame, SparkSession
+from src.metadata import add_ingestion_metadata
 
 
 def read_source_csv(spark: SparkSession, path: str) -> DataFrame:
-    """Read one source CSV file.
-
-    TODO: decide on an explicit schema vs. inferSchema (see the schema-drift
-    skill's guidance on why inference is risky for production ingestion) and
-    implement accordingly.
-    """
-    raise NotImplementedError("read_source_csv: implement CSV read")
+    """Read one source CSV file preserving types using inferSchema and header."""
+    return (
+        spark.read
+        .option("header", "true")
+        .option("inferSchema", "true")
+        .csv(path)
+    )
 
 
 def ingest_entity(
@@ -21,11 +21,7 @@ def ingest_entity(
     source_path: str,
     batch_id: str,
 ) -> DataFrame:
-    """Read + tag one entity's file for one batch. Wire together
-    read_source_csv -> schema_utils -> metadata.add_ingestion_metadata here,
-    then hand the result to idempotent_writer / data_quality from
-    pipeline.py.
-
-    TODO: implement.
-    """
-    raise NotImplementedError("ingest_entity: wire read -> schema drift -> metadata")
+    """Read + tag one entity's file for one batch."""
+    df_raw = read_source_csv(spark, source_path)
+    file_name = Path(source_path).name
+    return add_ingestion_metadata(df_raw, batch_id=batch_id, source_file=file_name)
